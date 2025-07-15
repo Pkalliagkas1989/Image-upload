@@ -65,26 +65,42 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buf := make([]byte, 512)
-	n, _ := file.Read(buf)
-	contentType := http.DetectContentType(buf[:n])
-	file.Seek(0, 0)
+	ext := strings.ToLower(filepath.Ext(header.Filename))
+	var contentType string
+	switch ext {
+	case ".jpg", ".jpeg":
+		contentType = "image/jpeg"
+		ext = ".jpg"
+	case ".png":
+		contentType = "image/png"
+	case ".gif":
+		contentType = "image/gif"
+	default:
+		buf := make([]byte, 512)
+		n, _ := file.Read(buf)
+		contentType = http.DetectContentType(buf[:n])
+		file.Seek(0, 0)
+		switch contentType {
+		case "image/jpeg":
+			ext = ".jpg"
+		case "image/png":
+			ext = ".png"
+		case "image/gif":
+			ext = ".gif"
+		default:
+			utils.ErrorResponse(w, "Unsupported image type", http.StatusBadRequest)
+			return
+		}
+	}
 
 	var img image.Image
-	var ext string
 	switch contentType {
 	case "image/jpeg":
 		img, err = jpeg.Decode(file)
-		ext = ".jpg"
 	case "image/png":
 		img, err = png.Decode(file)
-		ext = ".png"
 	case "image/gif":
 		img, err = gif.Decode(file)
-		ext = ".gif"
-	default:
-		utils.ErrorResponse(w, "Unsupported image type", http.StatusBadRequest)
-		return
 	}
 	if err != nil {
 		utils.ErrorResponse(w, "Failed to decode image", http.StatusBadRequest)
