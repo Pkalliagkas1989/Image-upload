@@ -11,10 +11,11 @@ type LikedPostsHandler struct {
 	PostRepo     *repository.PostRepository
 	CommentRepo  *repository.CommentRepository
 	ReactionRepo *repository.ReactionRepository
+	ImageRepo    *repository.ImageRepository
 }
 
-func NewLikedPostsHandler(postRepo *repository.PostRepository, commentRepo *repository.CommentRepository, reactionRepo *repository.ReactionRepository) *LikedPostsHandler {
-	return &LikedPostsHandler{PostRepo: postRepo, CommentRepo: commentRepo, ReactionRepo: reactionRepo}
+func NewLikedPostsHandler(postRepo *repository.PostRepository, commentRepo *repository.CommentRepository, reactionRepo *repository.ReactionRepository, imageRepo *repository.ImageRepository) *LikedPostsHandler {
+	return &LikedPostsHandler{PostRepo: postRepo, CommentRepo: commentRepo, ReactionRepo: reactionRepo, ImageRepo: imageRepo}
 }
 
 func (h *LikedPostsHandler) GetLikedPosts(w http.ResponseWriter, r *http.Request) {
@@ -93,16 +94,29 @@ func (h *LikedPostsHandler) GetLikedPosts(w http.ResponseWriter, r *http.Request
 			})
 		}
 
+		imgs, err := h.ImageRepo.GetByPostID(post.ID)
+		if err != nil {
+			utils.ErrorResponse(w, "Failed to load images", http.StatusInternalServerError)
+			return
+		}
+		var imgURL, thumbURL string
+		if len(imgs) > 0 {
+			imgURL = apiStaticBase + imgs[0].FilePath
+			thumbURL = apiStaticBase + imgs[0].ThumbnailPath
+		}
+
 		response = append(response, MyPostResponse{
-			ID:         post.ID,
-			UserID:     post.UserID,
-			Username:   post.Username,
-			Categories: catInfo,
-			Title:      post.Title,
-			Content:    post.Content,
-			CreatedAt:  post.CreatedAt,
-			Comments:   commentResp,
-			Reactions:  reactResp,
+			ID:           post.ID,
+			UserID:       post.UserID,
+			Username:     post.Username,
+			Categories:   catInfo,
+			Title:        post.Title,
+			Content:      post.Content,
+			ImageURL:     imgURL,
+			ThumbnailURL: thumbURL,
+			CreatedAt:    post.CreatedAt,
+			Comments:     commentResp,
+			Reactions:    reactResp,
 		})
 	}
 
