@@ -3,6 +3,7 @@ package handlers
 import (
 	"image"
 	"image/color"
+	"image/draw"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -142,17 +143,27 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 	out.Close()
 
-	thumbImg := createThumbnail(img)
 	thumbPath := filepath.Join(thumbDir, fileName)
 	outT, err := os.Create(thumbPath)
 	if err != nil {
 		utils.ErrorResponse(w, "Failed to save thumbnail", http.StatusInternalServerError)
 		return
 	}
-	if err := encodeImage(outT, thumbImg, contentType); err != nil {
-		outT.Close()
-		utils.ErrorResponse(w, "Failed to save thumbnail", http.StatusInternalServerError)
-		return
+
+	if contentType == "image/gif" {
+		thumbGIF := createThumbnailGIF(gifData)
+		if err := gif.EncodeAll(outT, thumbGIF); err != nil {
+			outT.Close()
+			utils.ErrorResponse(w, "Failed to save thumbnail", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		thumbImg := createThumbnail(img, contentType != "image/jpeg")
+		if err := encodeImage(outT, thumbImg, contentType); err != nil {
+			outT.Close()
+			utils.ErrorResponse(w, "Failed to save thumbnail", http.StatusInternalServerError)
+			return
+		}
 	}
 	outT.Close()
 
@@ -188,7 +199,7 @@ func encodeImage(w *os.File, img image.Image, contentType string) error {
 	return nil
 }
 
-func createThumbnail(src image.Image) image.Image {
+func createThumbnail(src image.Image, keepAlpha bool) image.Image {
 	const size = 150
 	sw := src.Bounds().Dx()
 	sh := src.Bounds().Dy()
@@ -199,8 +210,14 @@ func createThumbnail(src image.Image) image.Image {
 	nw := int(float64(sw) * scale)
 	nh := int(float64(sh) * scale)
 	resized := resizeImage(src, nw, nh)
-	dst := image.NewRGBA(image.Rect(0, 0, size, size))
-	drawBackground(dst, color.Black)
+	var dst draw.Image
+	if keepAlpha {
+		dst = image.NewNRGBA(image.Rect(0, 0, size, size))
+	} else {
+		d := image.NewRGBA(image.Rect(0, 0, size, size))
+		drawBackground(d, color.Black)
+		dst = d
+	}
 	offX := (size - nw) / 2
 	offY := (size - nh) / 2
 	for y := 0; y < nh; y++ {
@@ -233,4 +250,44 @@ func resizeImage(src image.Image, w, h int) *image.RGBA {
 		}
 	}
 	return dst
+}
+
+func createThumbnailGIF(src *gif.GIF) *gif.GIF {
+	const size = 150
+	dstGif := &gif.GIF{LoopCount: src.LoopCount}
+	for i, frame := range src.Image {
+		rgba := image.NewRGBA(frame.Bounds())
+		draw.Draw(rgba, frame.Bounds(), frame, image.Point{}, draw.Over)
+
+		sw := rgba.Bounds().Dx()
+		sh := rgba.Bounds().Dy()
+		scale := float64(size) / float64(sw)
+		if sh > sw {
+			scale = float64(size) / float64(sh)
+		}
+		nw := int(float64(sw) * scale)
+		nh := int(float64(sh) * scale)
+
+		resized := resizeImage(rgba, nw, nh)
+		dstFrame := image.NewNRGBA(image.Rect(0, 0, size, size))
+		offX := (size - nw) / 2
+		offY := (size - nh) / 2
+		for y := 0; y < nh; y++ {
+			for x := 0; x < nw; x++ {
+				dstFrame.Set(offX+x, offY+y, resized.At(x, y))
+			}
+		}
+		pal := image.NewPaletted(dstFrame.Rect, frame.Palette)
+		draw.FloydSteinberg.Draw(pal, dstFrame.Rect, dstFrame, image.Point{})
+		dstGif.Image = append(dstGif.Image, pal)
+		if i < len(src.Delay) {
+			dstGif.Delay = append(dstGif.Delay, src.Delay[i])
+		} else {
+			dstGif.Delay = append(dstGif.Delay, 0)
+		}
+		if i < len(src.Disposal) {
+			dstGif.Disposal = append(dstGif.Disposal, src.Disposal[i])
+		}
+	}
+	return dstGif
 }
