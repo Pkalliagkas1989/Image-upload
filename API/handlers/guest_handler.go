@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+// apiStaticBase is the base URL for serving static files like uploaded images.
+const apiStaticBase = "http://localhost:8080/static/"
+
 type GuestHandler struct {
 	categoryRepo *repository.CategoryRepository
 	postRepo     *repository.PostRepository
@@ -153,8 +156,8 @@ func (h *GuestHandler) GetGuestData(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			if len(imgs) > 0 {
-				postResp.ImageURL = "/static/" + imgs[0].FilePath
-				postResp.ThumbnailURL = "/static/" + imgs[0].ThumbnailPath
+				postResp.ImageURL = apiStaticBase + imgs[0].FilePath
+				postResp.ThumbnailURL = apiStaticBase + imgs[0].ThumbnailPath
 			}
 
 			comments, err := h.commentRepo.GetCommentsByPostWithUser(post.ID)

@@ -43,6 +43,10 @@ func SetupRoutes(db *sql.DB) http.Handler {
 	// Create router
 	mux := http.NewServeMux()
 
+	// Serve uploaded images from the API container
+	fs := http.FileServer(http.Dir("./uploads"))
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+
 	// Public routes
 	mux.Handle("/forum/api/categories", corsMiddleware.Handler(http.HandlerFunc(categoryHandler.GetCategories)))
 	mux.Handle("/forum/api/category", corsMiddleware.Handler(http.HandlerFunc(categoryHandler.GetCategoryByID)))
