@@ -10,16 +10,19 @@ import (
 )
 
 // CategoryHandler handles category related requests
+
 type CategoryHandler struct {
 	CategoryRepo *repository.CategoryRepository
 	PostRepo     *repository.PostRepository
+	ImageRepo    *repository.ImageRepository
 }
 
 // NewCategoryHandler creates a new CategoryHandler
-func NewCategoryHandler(catRepo *repository.CategoryRepository, postRepo *repository.PostRepository) *CategoryHandler {
+func NewCategoryHandler(catRepo *repository.CategoryRepository, postRepo *repository.PostRepository, imageRepo *repository.ImageRepository) *CategoryHandler {
 	return &CategoryHandler{
 		CategoryRepo: catRepo,
 		PostRepo:     postRepo,
+		ImageRepo:    imageRepo,
 	}
 }
 
@@ -72,6 +75,18 @@ func (h *CategoryHandler) GetCategoryByID(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		utils.ErrorResponse(w, "Failed to fetch posts", http.StatusInternalServerError)
 		return
+	}
+
+	for i := range posts {
+		imgs, err := h.ImageRepo.GetByPostID(posts[i].ID)
+		if err != nil {
+			utils.ErrorResponse(w, "Failed to load images", http.StatusInternalServerError)
+			return
+		}
+		if len(imgs) > 0 {
+			posts[i].ImageURL = apiStaticBase + imgs[0].FilePath
+			posts[i].ThumbnailURL = apiStaticBase + imgs[0].ThumbnailPath
+		}
 	}
 
 	categoryByID := models.CategoryWithPosts{

@@ -87,9 +87,8 @@ function validateSelectedImage() {
   imageError.textContent = "";
   const file = imageInput.files[0];
   if (!file) {
-    imageError.textContent = "Please select an image.";
-    resetImageSelection();
-    return false;
+    // No image selected, this is allowed
+    return true;
   }
   const allowed = ["image/jpeg", "image/png", "image/gif"];
   if (!allowed.includes(file.type)) {
