@@ -95,17 +95,13 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var img image.Image
-	var gifData *gif.GIF
 	switch contentType {
 	case "image/jpeg":
 		img, err = jpeg.Decode(file)
 	case "image/png":
 		img, err = png.Decode(file)
 	case "image/gif":
-		gifData, err = gif.DecodeAll(file)
-		if err == nil && len(gifData.Image) > 0 {
-			img = gifData.Image[0]
-		}
+		img, err = gif.Decode(file)
 	}
 	if err != nil {
 		utils.ErrorResponse(w, "Failed to decode image", http.StatusBadRequest)
@@ -128,18 +124,10 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorResponse(w, "Failed to save image", http.StatusInternalServerError)
 		return
 	}
-	if contentType == "image/gif" {
-		if err := gif.EncodeAll(out, gifData); err != nil {
-			out.Close()
-			utils.ErrorResponse(w, "Failed to save image", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		if err := encodeImage(out, img, contentType); err != nil {
-			out.Close()
-			utils.ErrorResponse(w, "Failed to save image", http.StatusInternalServerError)
-			return
-		}
+	if err := encodeImage(out, img, contentType); err != nil {
+		out.Close()
+		utils.ErrorResponse(w, "Failed to save image", http.StatusInternalServerError)
+		return
 	}
 	out.Close()
 
