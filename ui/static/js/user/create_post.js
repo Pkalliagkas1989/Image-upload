@@ -16,6 +16,7 @@ const addImageBtn = document.getElementById("add-image-btn");
 const cancelImageBtn = document.getElementById("cancel-image-btn");
 const imageStatus = document.getElementById("image-status");
 const imageError = document.getElementById("image-error");
+const imagePreview = document.getElementById("image-preview");
 
 // Store CSRF token in-memory here (initially empty)
 let csrfTokenFromResponse = null;
@@ -81,6 +82,8 @@ function resetImageSelection() {
   imageError.textContent = "";
   cancelImageBtn.classList.add("hidden");
   addImageBtn.disabled = false;
+  imagePreview.src = "";
+  imagePreview.classList.add("hidden");
 }
 
 function validateSelectedImage() {
@@ -97,6 +100,8 @@ function validateSelectedImage() {
     imageStatus.classList.add("status-error");
     imageError.textContent = "Unsupported image type";
     imageInput.value = "";
+    imagePreview.src = "";
+    imagePreview.classList.add("hidden");
     return false;
   }
   if (file.size > 20 * 1024 * 1024) {
@@ -105,6 +110,8 @@ function validateSelectedImage() {
     imageStatus.classList.add("status-error");
     imageError.textContent = "Image exceeds 20 MB limit";
     imageInput.value = "";
+    imagePreview.src = "";
+    imagePreview.classList.add("hidden");
     return false;
   }
 
@@ -113,6 +120,12 @@ function validateSelectedImage() {
   imageStatus.classList.add("status-valid");
   cancelImageBtn.classList.remove("hidden");
   addImageBtn.disabled = true;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    imagePreview.src = e.target.result;
+    imagePreview.classList.remove("hidden");
+  };
+  reader.readAsDataURL(file);
   return true;
 }
 

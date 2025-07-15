@@ -112,6 +112,20 @@ body, html {
   margin-bottom: 0.3em;
 }
 
+#add-image-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#image-preview {
+  display: block;
+  margin-top: 0.5em;
+  max-width: 120px;
+  max-height: 120px;
+  border-radius: 6px;
+}
+
 #cancel-image-btn {
   margin-left: 0.5em;
 }
