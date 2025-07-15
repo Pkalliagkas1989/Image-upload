@@ -39,6 +39,13 @@ function renderLikedPosts(posts) {
 
   posts.forEach(post => {
     const node = postTemplate.content.cloneNode(true);
+    const postEl = node.querySelector('.post');
+    if (post.thumbnail_url) {
+      const img = document.createElement('img');
+      img.src = post.thumbnail_url;
+      img.className = 'post-thumb';
+      postEl.insertBefore(img, postEl.firstChild);
+    }
 
     // Fill in post data
     node.querySelector('.post-header').textContent = post.username || 'Anonymous';
