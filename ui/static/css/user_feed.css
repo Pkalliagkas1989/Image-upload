@@ -112,6 +112,28 @@ body, html {
   margin-bottom: 0.3em;
 }
 
+#cancel-image-btn {
+  margin-left: 0.5em;
+}
+
+.image-status {
+  display: inline-block;
+  margin-left: 0.5em;
+  font-size: 0.9em;
+}
+
+.image-status.status-valid {
+  color: #22c55e;
+}
+
+.image-status.status-error {
+  color: #ef4444;
+}
+
+.hidden {
+  display: none !important;
+}
+
 .image-error {
   color: red;
   font-size: 0.9em;

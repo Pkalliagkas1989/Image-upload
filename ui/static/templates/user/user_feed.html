@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -29,8 +29,14 @@
         <li>
           <ul id="category-tabs" class="category-tabs dropdown-content"></ul>
         </li>
-        <li><a href="/user/created-posts" id="created-posts-link">Created Posts</a></li>
-        <li><a href="/user/liked-posts" id="liked-posts-link">Liked Posts</a></li>
+        <li>
+          <a href="/user/created-posts" id="created-posts-link"
+            >Created Posts</a
+          >
+        </li>
+        <li>
+          <a href="/user/liked-posts" id="liked-posts-link">Liked Posts</a>
+        </li>
       </ul>
       <div class="side-glow"></div>
     </nav>
@@ -54,7 +60,8 @@
           <div class="static-reactions">
             <span class="up-arrow">▲</span> <span class="like-count">0</span>
             &nbsp;&nbsp;
-            <span class="down-arrow">▼</span> <span class="dislike-count">0</span>
+            <span class="down-arrow">▼</span>
+            <span class="dislike-count">0</span>
           </div>
         </div>
         <div class="post-comments"></div>
@@ -70,7 +77,8 @@
           <div class="static-reactions">
             <span class="up-arrow">▲</span> <span class="like-count">0</span>
             &nbsp;&nbsp;
-            <span class="down-arrow">▼</span> <span class="dislike-count">0</span>
+            <span class="down-arrow">▼</span>
+            <span class="dislike-count">0</span>
           </div>
         </div>
       </div>
@@ -79,27 +87,33 @@
     <div id="post-modal" class="modal hidden">
       <div class="modal-content">
         <div class="body-container">
-        <button class="close-btn">&times;</button>
-        <h2>Create Post</h2>
+          <button class="close-btn">&times;</button>
+          <h2>Create Post</h2>
 
-        <input id="post-title" placeholder="Post Title" />
-        <div id="post-title-count" class="char-counter">0 / 100</div>
-        <textarea id="post-body" placeholder="Write your post..."></textarea>
-        <div id="post-body-count" class="char-counter">0 / 5000</div>
+          <input id="post-title" placeholder="Post Title" />
+          <div id="post-title-count" class="char-counter">0 / 100</div>
+          <textarea id="post-body" placeholder="Write your post..."></textarea>
+          <div id="post-body-count" class="char-counter">0 / 5000</div>
         </div>
 
         <div class="category-container">
-                  <div class="image-upload">
-          <input type="file" id="post-image" accept="image/jpeg,image/png,image/gif" hidden />
-          <button id="add-image-btn">Add Image</button>
-          <div id="image-error" class="image-error"></div>
+          <div class="image-upload">
+            <input
+              type="file"
+              id="post-image"
+              accept="image/jpeg,image/png,image/gif"
+              hidden
+            />
+            <button id="add-image-btn">Add Image</button>
+            <span id="image-status" class="image-status hidden"></span>
+            <button id="cancel-image-btn" class="hidden">Cancel</button>
+            <div id="image-error" class="image-error"></div>
+          </div>
+          <label for="post-category" class="modal-label">Categories</label>
+          <div id="post-category" class="checkbox-group"></div>
+          <button id="submit-post">Submit</button>
         </div>
-        <label for="post-category" class="modal-label">Categories</label>
-        <div id="post-category" class="checkbox-group"></div>
-        <button id="submit-post">Submit</button>
       </div>
-      </div>
-    </div>
     </div>
   </body>
 </html>
