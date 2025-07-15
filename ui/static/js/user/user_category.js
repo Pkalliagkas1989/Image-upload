@@ -111,6 +111,7 @@ function renderCategoryPosts(category, feedCategories) {
     if (post.thumbnail_url) {
       const img = document.createElement('img');
       img.src = post.thumbnail_url;
+      img.alt = 'Post thumbnail';
       img.className = 'post-thumb';
       postEl.insertBefore(img, postEl.firstChild);
     }

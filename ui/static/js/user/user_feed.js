@@ -33,9 +33,10 @@ function renderFeed(categories) {
     const postNode = postTpl.content.cloneNode(true);
     const postElement = postNode.querySelector(".post");
 
-     if (post.thumbnail_url) {
+    if (post.thumbnail_url) {
       const img = document.createElement("img");
       img.src = post.thumbnail_url;
+      img.alt = "Post thumbnail";
       img.className = "post-thumb";
       postElement.insertBefore(img, postElement.firstChild);
     }
