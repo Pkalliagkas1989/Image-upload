@@ -62,6 +62,13 @@ function renderSinglePost(post) {
     <button disabled>▼ ${dislikes}</button>
   `;
 
+  const commentCount =
+    post.comment_count || (post.comments ? post.comments.length : 0);
+  const commentCounter = document.createElement('span');
+  commentCounter.className = 'comment-count';
+  commentCounter.textContent = `💬 ${commentCount}`;
+  reactions.appendChild(commentCounter);
+
   const categoryEl = document.createElement('div');
   categoryEl.className = 'post-categories';
   categoryEl.innerHTML = `<span class="posted-on-text">posted on the </span>`;
