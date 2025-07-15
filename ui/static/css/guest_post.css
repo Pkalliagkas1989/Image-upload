@@ -45,6 +45,12 @@
     margin-bottom: 1em;
 }
 
+.post-image {
+    max-width: 100%;
+    display: block;
+    margin-bottom: 1em;
+}
+
 .post-content {
   background: var(--bg-secondary);
   border-radius: 16px;

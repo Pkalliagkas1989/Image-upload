@@ -95,6 +95,14 @@ function renderCategoryPosts(category) {
 
   category.posts.forEach(post => {
     const postNode = postTemplate.content.cloneNode(true);
+    const postEl = postNode.querySelector('.post');
+
+    if (post.thumbnail_url) {
+      const img = document.createElement('img');
+      img.src = post.thumbnail_url;
+      img.className = 'post-thumb';
+      postEl.insertBefore(img, postEl.firstChild);
+    }
 
     // Set text content for template elements
     // The classes here (post-header, post-title, etc.) are crucial for CSS to apply

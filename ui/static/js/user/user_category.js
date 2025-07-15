@@ -106,6 +106,15 @@ function renderCategoryPosts(category, feedCategories) {
     const dislikes = updated?.reactions?.filter(r => r.reaction_type === 2).length || 0;
 
     const postNode = postTemplate.content.cloneNode(true);
+    const postEl = postNode.querySelector('.post');
+
+    if (post.thumbnail_url) {
+      const img = document.createElement('img');
+      img.src = post.thumbnail_url;
+      img.className = 'post-thumb';
+      postEl.insertBefore(img, postEl.firstChild);
+    }
+
     postNode.querySelector('.post-header').textContent = post.username || 'Anonymous';
     postNode.querySelector('.post-title').textContent = post.title;
     postNode.querySelector('.post-content').textContent = post.content;
