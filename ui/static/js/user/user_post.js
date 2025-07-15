@@ -104,6 +104,13 @@ function renderSinglePost(post) {
   reactions.appendChild(likeBtn);
   reactions.appendChild(dislikeBtn);
 
+  const commentCount =
+    post.comment_count || (post.comments ? post.comments.length : 0);
+  const commentCounter = document.createElement('span');
+  commentCounter.className = 'comment-count';
+  commentCounter.textContent = `💬 ${commentCount}`;
+  reactions.appendChild(commentCounter);
+
   // Reaction button click handlers
   likeBtn.addEventListener('click', () => handleReaction(post.id, 'post', 1, likeBtn, dislikeBtn));
   dislikeBtn.addEventListener('click', () => handleReaction(post.id, 'post', 2, likeBtn, dislikeBtn));

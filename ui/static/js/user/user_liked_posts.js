@@ -57,6 +57,15 @@ function renderLikedPosts(posts) {
     node.querySelector('.like-count').textContent = likeCount;
     node.querySelector('.dislike-count').textContent = dislikeCount;
 
+    const commentCount =
+      post.comment_count || (post.comments ? post.comments.length : 0);
+    const commentContainer = document.createElement('span');
+    commentContainer.className = 'comment-count';
+    commentContainer.innerHTML = `💬 ${commentCount}`;
+    node
+      .querySelector('.like-count')
+      .parentNode.appendChild(commentContainer);
+
     // Wrap post in clickable link
     const wrapper = document.createElement('a');
     wrapper.href = `/user/post?id=${post.id}`;

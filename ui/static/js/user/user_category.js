@@ -122,6 +122,15 @@ function renderCategoryPosts(category, feedCategories) {
     postNode.querySelector('.like-count').textContent = likes;
     postNode.querySelector('.dislike-count').textContent = dislikes;
 
+    const commentCount =
+      post.comment_count || (post.comments ? post.comments.length : 0);
+    const commentContainer = document.createElement('span');
+    commentContainer.className = 'comment-count';
+    commentContainer.innerHTML = `💬 ${commentCount}`;
+    postNode
+      .querySelector('.like-count')
+      .parentNode.appendChild(commentContainer);
+
     const postWrapper = document.createElement('a');
     postWrapper.href = `/user/post?id=${encodeURIComponent(post.id)}`;
     postWrapper.className = 'post-link';

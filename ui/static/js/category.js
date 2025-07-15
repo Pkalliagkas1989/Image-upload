@@ -114,6 +114,15 @@ function renderCategoryPosts(category) {
     postNode.querySelector('.like-count').textContent = post.likes || 0;
     postNode.querySelector('.dislike-count').textContent = post.dislikes || 0;
 
+    const commentCount =
+      post.comment_count || (post.comments ? post.comments.length : 0);
+    const commentContainer = document.createElement('span');
+    commentContainer.className = 'comment-count';
+    commentContainer.innerHTML = `💬 ${commentCount}`;
+    postNode
+      .querySelector('.like-count')
+      .parentNode.appendChild(commentContainer);
+
     // Wrap post in clickable anchor, applying the 'post-link' class
     const postWrapper = document.createElement('a');
     postWrapper.href = `/guest/post?id=${encodeURIComponent(post.id)}`;
