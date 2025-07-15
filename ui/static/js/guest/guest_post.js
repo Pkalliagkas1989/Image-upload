@@ -42,6 +42,13 @@ function renderSinglePost(post) {
   meta.className = 'post-meta';
   meta.textContent = `By ${post.username || post.user_id || 'Unknown'} on ${new Date(post.created_at).toLocaleString()}`;
 
+  let imageEl = null;
+  if (post.image_url) {
+    imageEl = document.createElement('img');
+    imageEl.src = post.image_url;
+    imageEl.className = 'post-image';
+  }
+
   const content = document.createElement('div');
   content.className = 'post-content';
   content.textContent = post.content || '';
@@ -135,6 +142,7 @@ function renderSinglePost(post) {
 
   container.appendChild(title);
   container.appendChild(meta);
+  if (imageEl) container.appendChild(imageEl);
   container.appendChild(content);
   container.appendChild(reactions);
   container.appendChild(categoryEl);

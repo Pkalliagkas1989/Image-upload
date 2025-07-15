@@ -144,3 +144,12 @@
 #forumContainer p {
     color: var(--text-primary);
 }
+
+.post-thumb {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    background: #000;
+    display: block;
+    margin-bottom: 0.5em;
+}
