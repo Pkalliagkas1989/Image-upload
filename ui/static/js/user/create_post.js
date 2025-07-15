@@ -13,6 +13,8 @@ const titleCount = document.getElementById("post-title-count");
 const bodyCount = document.getElementById("post-body-count");
 const imageInput = document.getElementById("post-image");
 const addImageBtn = document.getElementById("add-image-btn");
+const cancelImageBtn = document.getElementById("cancel-image-btn");
+const imageStatus = document.getElementById("image-status");
 const imageError = document.getElementById("image-error");
 
 // Store CSRF token in-memory here (initially empty)
@@ -69,19 +71,54 @@ titleInput.addEventListener("input", updateTitleCount);
 contentInput.addEventListener("input", updateBodyCount);
 
 addImageBtn.addEventListener("click", () => imageInput.click());
+cancelImageBtn.addEventListener("click", resetImageSelection);
 
-imageInput.addEventListener("change", () => {
+function resetImageSelection() {
+  imageInput.value = "";
+  imageStatus.textContent = "";
+  imageStatus.classList.add("hidden");
+  imageStatus.classList.remove("status-valid", "status-error");
+  imageError.textContent = "";
+  cancelImageBtn.classList.add("hidden");
+  addImageBtn.disabled = false;
+}
+
+function validateSelectedImage() {
   imageError.textContent = "";
   const file = imageInput.files[0];
-  if (!file) return;
+  if (!file) {
+    imageError.textContent = "Please select an image.";
+    resetImageSelection();
+    return false;
+  }
   const allowed = ["image/jpeg", "image/png", "image/gif"];
   if (!allowed.includes(file.type)) {
+    imageStatus.textContent = file.name;
+    imageStatus.classList.remove("hidden", "status-valid");
+    imageStatus.classList.add("status-error");
     imageError.textContent = "Unsupported image type";
     imageInput.value = "";
-  } else if (file.size > 20 * 1024 * 1024) {
+    return false;
+  }
+  if (file.size > 20 * 1024 * 1024) {
+    imageStatus.textContent = file.name;
+    imageStatus.classList.remove("hidden", "status-valid");
+    imageStatus.classList.add("status-error");
     imageError.textContent = "Image exceeds 20 MB limit";
     imageInput.value = "";
+    return false;
   }
+
+  imageStatus.textContent = file.name;
+  imageStatus.classList.remove("hidden", "status-error");
+  imageStatus.classList.add("status-valid");
+  cancelImageBtn.classList.remove("hidden");
+  addImageBtn.disabled = true;
+  return true;
+}
+
+imageInput.addEventListener("change", () => {
+  validateSelectedImage();
 });
 
 // Open modal and load categories
@@ -158,8 +195,7 @@ function clearModalInputs() {
   categoryCheckboxesContainer
     .querySelectorAll("input[type=checkbox]")
     .forEach((cb) => (cb.checked = false));
-  imageInput.value = "";
-  imageError.textContent = "";
+  resetImageSelection();
 }
 
 // Submit post
@@ -174,6 +210,10 @@ submitPostBtn.addEventListener("click", async () => {
 
   if (!title || !content || categoryIDs.length === 0) {
     alert("Please fill out all fields and select at least one category.");
+    return;
+  }
+
+  if (!validateSelectedImage()) {
     return;
   }
 

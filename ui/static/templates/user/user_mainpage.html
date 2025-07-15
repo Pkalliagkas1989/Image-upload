@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -27,8 +27,14 @@
         <li>
           <ul id="category-tabs" class="category-tabs dropdown-content"></ul>
         </li>
-        <li><a href="/user/created-posts" id="created-posts-link">Created Posts</a></li>
-        <li><a href="/user/liked-posts" id="liked-posts-link">Liked Posts</a></li>
+        <li>
+          <a href="/user/created-posts" id="created-posts-link"
+            >Created Posts</a
+          >
+        </li>
+        <li>
+          <a href="/user/liked-posts" id="liked-posts-link">Liked Posts</a>
+        </li>
       </ul>
       <div class="side-glow"></div>
     </nav>
@@ -45,9 +51,16 @@
         <input id="post-title" placeholder="Post Title" />
         <textarea id="post-body" placeholder="Write your post..."></textarea>
 
-          <div class="image-upload">
-          <input type="file" id="post-image" accept="image/jpeg,image/png,image/gif" hidden />
+        <div class="image-upload">
+          <input
+            type="file"
+            id="post-image"
+            accept="image/jpeg,image/png,image/gif"
+            hidden
+          />
           <button id="add-image-btn">Add Image</button>
+          <span id="image-status" class="image-status hidden"></span>
+          <button id="cancel-image-btn" class="hidden">Cancel</button>
           <div id="image-error" class="image-error"></div>
         </div>
 
