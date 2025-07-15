@@ -18,7 +18,9 @@ import (
 	"forum/utils"
 )
 
-const uploadBaseDir = "../ui/static/uploads/images"
+// uploadBaseDir is relative to the API project root. Images will be served
+// from the API container under /static/.
+const uploadBaseDir = "uploads/images"
 
 type ImageHandler struct {
 	ImageRepo *repository.ImageRepository
@@ -126,8 +128,10 @@ func (h *ImageHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 	outT.Close()
 
-	relPath := filepath.ToSlash(strings.TrimPrefix(filePath, "../ui/static/"))
-	relThumb := filepath.ToSlash(strings.TrimPrefix(thumbPath, "../ui/static/"))
+	// Store paths relative to the "uploads" directory so they can be served
+	// via the /static/ route.
+	relPath := filepath.ToSlash(strings.TrimPrefix(filePath, "uploads/"))
+	relThumb := filepath.ToSlash(strings.TrimPrefix(thumbPath, "uploads/"))
 	imgModel := models.Image{
 		PostID:        postID,
 		UserID:        user.ID,
