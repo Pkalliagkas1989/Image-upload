@@ -5,6 +5,27 @@ const list = document.getElementById('notif-list');
 const template = document.getElementById('notif-item-template');
 const markAllBtn = document.getElementById('mark-read-btn');
 const deleteAllBtn = document.getElementById('delete-all-btn');
+const notifLink = document.getElementById('notifications-link');
+
+// check for unread notifications and highlight button
+async function checkUnread() {
+  try {
+    const resp = await fetch('http://localhost:8080/forum/api/user/notifications', {
+      credentials: 'include'
+    });
+    if (!resp.ok) throw new Error('failed');
+    const data = await resp.json();
+    const hasUnread = data.some(n => !n.is_read);
+    toggleAlert(hasUnread);
+  } catch (err) {
+    console.error('Failed to check notifications', err);
+  }
+}
+
+function toggleAlert(on) {
+  if (openBtn) openBtn.classList.toggle('notification-alert', on);
+  if (notifLink) notifLink.classList.toggle('notification-alert', on);
+}
 
 async function fetchNotifications() {
   try {
@@ -12,6 +33,8 @@ async function fetchNotifications() {
     if (!resp.ok) throw new Error('failed');
     const data = await resp.json();
     renderList(data);
+    const hasUnread = data.some(n => !n.is_read);
+    toggleAlert(hasUnread);
   } catch (err) {
     console.error(err);
     list.textContent = 'Failed to load notifications';
@@ -82,11 +105,15 @@ if (markAllBtn) {
   markAllBtn.addEventListener('click', async () => {
     await fetch('http://localhost:8080/forum/api/user/notifications/read', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     fetchNotifications();
+    checkUnread();
   });
 }
 if (deleteAllBtn) {
   deleteAllBtn.addEventListener('click', async () => {
     await fetch('http://localhost:8080/forum/api/user/notifications/delete', { method: 'DELETE', credentials: 'include' });
     fetchNotifications();
+    checkUnread();
   });
 }
+
+window.addEventListener('DOMContentLoaded', checkUnread);
