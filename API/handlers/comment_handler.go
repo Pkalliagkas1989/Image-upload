@@ -12,12 +12,14 @@ import (
 
 // CommentHandler handles comment related endpoints
 type CommentHandler struct {
-	CommentRepo *repository.CommentRepository
+	CommentRepo      *repository.CommentRepository
+	PostRepo         *repository.PostRepository
+	NotificationRepo *repository.NotificationRepository
 }
 
 // NewCommentHandler creates a new CommentHandler
-func NewCommentHandler(repo *repository.CommentRepository) *CommentHandler {
-	return &CommentHandler{CommentRepo: repo}
+func NewCommentHandler(repo *repository.CommentRepository, postRepo *repository.PostRepository, notifRepo *repository.NotificationRepository) *CommentHandler {
+	return &CommentHandler{CommentRepo: repo, PostRepo: postRepo, NotificationRepo: notifRepo}
 }
 
 // CreateComment creates a new comment on a post for the authenticated user
@@ -56,6 +58,19 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		utils.ErrorResponse(w, "Failed to create comment", http.StatusInternalServerError)
 		return
+	}
+
+	post, _ := h.PostRepo.GetByID(req.PostID)
+	if post != nil && post.UserID != user.ID {
+		n := models.Notification{
+			UserID:    post.UserID,
+			ActorID:   user.ID,
+			PostID:    &post.ID,
+			CommentID: &created.ID,
+			Action:    "comment",
+			IsRead:    false,
+		}
+		h.NotificationRepo.Create(n)
 	}
 
 	utils.JSONResponse(w, created, http.StatusCreated)

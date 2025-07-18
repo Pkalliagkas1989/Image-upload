@@ -48,3 +48,17 @@ func (r *CommentRepository) Create(comment models.Comment) (*models.Comment, err
 	}
 	return &comment, nil
 }
+
+// GetByID retrieves a comment by ID
+func (r *CommentRepository) GetByID(id string) (*models.Comment, error) {
+	row := r.db.QueryRow(`SELECT comment_id, post_id, user_id, content, created_at, updated_at FROM comments WHERE comment_id = ?`, id)
+	var c models.Comment
+	err := row.Scan(&c.ID, &c.PostID, &c.UserID, &c.Content, &c.CreatedAt, &c.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &c, nil
+}

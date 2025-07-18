@@ -47,7 +47,7 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 
 		if session.ExpiresAt.Before(time.Now()) {
 			// Scenario 3: Session found in DB, but its expiration time is in the past.
-			log.Printf("AuthMiddleware [DEBUG]: Session ID '%s' expired (UserID: %d) for request to %s", session.SessionID, session.UserID, r.URL.Path)
+			log.Printf("AuthMiddleware [DEBUG]: Session ID '%s' expired (UserID: %s) for request to %s", session.SessionID, session.UserID, r.URL.Path)
 			m.SessionRepo.DeleteBySessionID(session.SessionID)
 			m.clearSessionCookie(w) // Clear expired cookie
 			next.ServeHTTP(w, r)    // Proceed as unauthenticated
@@ -57,14 +57,14 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 		user, err := m.UserRepo.GetByID(session.UserID)
 		if err != nil {
 			// Scenario 4: Session is valid, but the user it points to cannot be found.
-			log.Printf("AuthMiddleware [DEBUG]: User not found for session ID '%s' (UserID %d) for request to %s: %v", session.SessionID, session.UserID, r.URL.Path, err)
+			log.Printf("AuthMiddleware [DEBUG]: User not found for session ID '%s' (UserID %s) for request to %s: %v", session.SessionID, session.UserID, r.URL.Path, err)
 			m.clearSessionCookie(w) // Clear cookie, as session is invalid without a user
 			next.ServeHTTP(w, r)    // Proceed as unauthenticated
 			return
 		}
 
 		// Scenario 5: Authentication successful!
-		log.Printf("AuthMiddleware [INFO]: User '%s' (ID: %d) authenticated for request to %s", user.Username, user.ID, r.URL.Path)
+		log.Printf("AuthMiddleware [INFO]: User '%s' (ID: %s) authenticated for request to %s", user.Username, user.ID, r.URL.Path)
 		ctx := context.WithValue(r.Context(), "user", user)
 		ctx = context.WithValue(ctx, "session", session)
 		next.ServeHTTP(w, r.WithContext(ctx))

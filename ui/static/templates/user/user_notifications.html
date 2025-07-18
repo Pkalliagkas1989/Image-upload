@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Notifications</title>
+    <link rel="stylesheet" href="/static/css/user.css" />
+    <script src="/static/js/user/user_notifications.js" type="module"></script>
+  </head>
+  <body>
+    <nav class="navbar">
+      <a class="navbar-brand" href="/user/feed">Forum</a>
+    </nav>
+    <main id="notifContainer" class="forum-content"></main>
+    <template id="notif-template">
+      <div class="notification">
+        <span class="notif-text"></span>
+        <time class="notif-time"></time>
+      </div>
+    </template>
+  </body>
+</html>

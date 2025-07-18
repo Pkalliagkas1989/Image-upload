@@ -12,6 +12,20 @@ type PostRepository struct {
 	db *sql.DB
 }
 
+// GetByID returns a post by its ID
+func (r *PostRepository) GetByID(id string) (*models.Post, error) {
+	row := r.db.QueryRow(`SELECT post_id, user_id, title, content, created_at, updated_at FROM posts WHERE post_id = ?`, id)
+	var p models.Post
+	err := row.Scan(&p.ID, &p.UserID, &p.Title, &p.Content, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &p, nil
+}
+
 // checks if the legacy category_id column exists on the posts table
 func (r *PostRepository) hasLegacyCategoryColumn() bool {
 	rows, err := r.db.Query(`PRAGMA table_info(posts)`)
@@ -160,6 +174,63 @@ func (r *PostRepository) GetCategoriesByPostID(postID string) ([]models.Category
 	return categories, nil
 }
 
+// Update updates a post if it belongs to the given user
+func (r *PostRepository) Update(id, userID, title, content string, categoryIDs []int) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	res, err := tx.Exec(`UPDATE posts SET title = ?, content = ?, updated_at = ? WHERE post_id = ? AND user_id = ?`, title, content, time.Now(), id, userID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	if affected == 0 {
+		tx.Rollback()
+		return sql.ErrNoRows
+	}
+
+	if _, err := tx.Exec(`DELETE FROM post_categories WHERE post_id = ?`, id); err != nil {
+		tx.Rollback()
+		return err
+	}
+	stmt, err := tx.Prepare(`INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)`)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer stmt.Close()
+	for _, cid := range categoryIDs {
+		if _, err := stmt.Exec(id, cid); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+// Delete removes a post if it belongs to the user
+func (r *PostRepository) Delete(id, userID string) error {
+	res, err := r.db.Exec(`DELETE FROM posts WHERE post_id = ? AND user_id = ?`, id, userID)
+	if err != nil {
+		return err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
 // GetPostsReactedByUser returns posts that the given user has reacted to either
 // directly or via reactions on comments. The posts are ordered by creation time
 // descending.
@@ -190,7 +261,6 @@ func (r *PostRepository) GetCategoriesByPostID(postID string) ([]models.Category
 // 	}
 // 	return posts, nil
 // }
-
 
 func (r *PostRepository) GetPostsReactedByUser(userID string) ([]models.PostWithUser, error) {
 	query := `

@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json" // Add this import
 	"log"
 	"net/http"
-	"encoding/json" // Add this import
 )
 
 // Add a struct to unmarshal the session verify response
@@ -130,6 +130,12 @@ func router(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		http.ServeFile(w, r, "./static/templates/user/user_created_posts.html")
+	case "/user/notifications":
+		if ok, _ := checkSession(r); !ok {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+		http.ServeFile(w, r, "./static/templates/user/user_notifications.html")
 	default:
 		w.WriteHeader(http.StatusNotFound)
 		http.ServeFile(w, r, "./static/templates/error.html")

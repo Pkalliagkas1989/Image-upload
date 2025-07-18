@@ -20,6 +20,7 @@ func SetupRoutes(db *sql.DB) http.Handler {
 	commentRepo := repository.NewCommentRepository(db)
 	reactionRepo := repository.NewReactionRepository(db)
 	imageRepo := repository.NewImageRepository(db)
+	notificationRepo := repository.NewNotificationRepository(db)
 
 	// Create handlers
 	authHandler := handlers.NewAuthHandler(userRepo, sessionRepo)
@@ -28,8 +29,9 @@ func SetupRoutes(db *sql.DB) http.Handler {
 	postHandler := handlers.NewPostHandler(postRepo)
 	myPostsHandler := handlers.NewMyPostsHandler(postRepo, commentRepo, reactionRepo, imageRepo)
 	likedPostsHandler := handlers.NewLikedPostsHandler(postRepo, commentRepo, reactionRepo, imageRepo)
-	commentHandler := handlers.NewCommentHandler(commentRepo)
-	reactionHandler := handlers.NewReactionHandler(reactionRepo)
+	commentHandler := handlers.NewCommentHandler(commentRepo, postRepo, notificationRepo)
+	reactionHandler := handlers.NewReactionHandler(reactionRepo, postRepo, commentRepo, notificationRepo)
+	notificationHandler := handlers.NewNotificationHandler(notificationRepo)
 	imageHandler := handlers.NewImageHandler(imageRepo)
 	guestHandler := handlers.NewGuestHandler(categoryRepo, postRepo, commentRepo, reactionRepo, imageRepo)
 
@@ -82,11 +84,14 @@ func SetupRoutes(db *sql.DB) http.Handler {
 
 	// Protected user routes
 	mux.Handle("/forum/api/posts/create", protected(http.HandlerFunc(postHandler.CreatePost)))
+	mux.Handle("/forum/api/posts/update", protected(http.HandlerFunc(postHandler.UpdatePost)))
+	mux.Handle("/forum/api/posts/delete", protected(http.HandlerFunc(postHandler.DeletePost)))
 	mux.Handle("/forum/api/user/posts", protected(http.HandlerFunc(myPostsHandler.GetMyPosts)))
 	mux.Handle("/forum/api/user/liked", protected(http.HandlerFunc(likedPostsHandler.GetLikedPosts)))
 	mux.Handle("/forum/api/comments/create", protected(http.HandlerFunc(commentHandler.CreateComment)))
 	mux.Handle("/forum/api/react", protected(http.HandlerFunc(reactionHandler.CreateReact)))
 	mux.Handle("/forum/api/images/upload", protected(http.HandlerFunc(imageHandler.Upload)))
+	mux.Handle("/forum/api/user/notifications", protected(http.HandlerFunc(notificationHandler.GetNotifications)))
 
 	// Additional protected routes for user management
 	mux.Handle("/forum/api/user/profile", protected(http.HandlerFunc(authHandler.GetProfile)))

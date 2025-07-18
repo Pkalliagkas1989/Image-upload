@@ -10,6 +10,9 @@ const IdxReactionsPostID = `CREATE INDEX IF NOT EXISTS idx_reactions_post_id ON 
 const IdxReactionsCommentID = `CREATE INDEX IF NOT EXISTS idx_reactions_comment_id ON reactions(comment_id);`
 const IdxImagesPostID = `CREATE INDEX IF NOT EXISTS idx_images_post_id ON images(post_id);`
 
+const IdxNotificationsUserID = `CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);`
+const IdxNotificationsActorID = `CREATE INDEX IF NOT EXISTS idx_notifications_actor_id ON notifications(actor_id);`
+
 // -- Index for faster lookups by provider and provider_user_id
 const CreateOAuthIndexes = `
 		CREATE INDEX IF NOT EXISTS idx_oauth_provider_user 
