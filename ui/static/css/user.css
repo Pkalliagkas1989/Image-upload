@@ -699,3 +699,12 @@ body {
   color: var(--color-warning);
   cursor: pointer;
 }
+
+/* Highlight class for unread notifications */
+.notification-alert {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-shadow: 0 0 8px rgba(192, 132, 252, 0.7);
+  filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.5));
+}
