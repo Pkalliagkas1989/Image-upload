@@ -53,10 +53,32 @@ function renderList(notifs) {
     if (!n.is_read) item.classList.add('unread');
     node.querySelector('.notif-text').textContent = formatMessage(n);
     node.querySelector('.notif-time').textContent = new Date(n.created_at).toLocaleString();
-    node.querySelector('.delete-btn').addEventListener('click', async () => {
-      await fetch(`http://localhost:8080/forum/api/user/notifications/delete?id=${n.id}`, { method: 'DELETE', credentials: 'include' });
-      fetchNotifications();
+
+    const delBtn = node.querySelector('.delete-btn');
+    delBtn.addEventListener('click', async () => {
+      await fetch(`http://localhost:8080/forum/api/user/notifications/delete?id=${n.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      await fetchNotifications();
+      checkUnread();
     });
+
+    const markBtn = node.querySelector('.mark-btn');
+    if (markBtn) {
+      if (n.is_read) markBtn.classList.add('hidden');
+      markBtn.addEventListener('click', async () => {
+        await fetch('http://localhost:8080/forum/api/user/notifications/read', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: n.id })
+        });
+        await fetchNotifications();
+        checkUnread();
+      });
+    }
+
     list.appendChild(node);
   });
 }
@@ -104,14 +126,14 @@ window.addEventListener('click', (e) => {
 if (markAllBtn) {
   markAllBtn.addEventListener('click', async () => {
     await fetch('http://localhost:8080/forum/api/user/notifications/read', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}' });
-    fetchNotifications();
+    await fetchNotifications();
     checkUnread();
   });
 }
 if (deleteAllBtn) {
   deleteAllBtn.addEventListener('click', async () => {
     await fetch('http://localhost:8080/forum/api/user/notifications/delete', { method: 'DELETE', credentials: 'include' });
-    fetchNotifications();
+    await fetchNotifications();
     checkUnread();
   });
 }

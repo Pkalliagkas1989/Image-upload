@@ -689,6 +689,11 @@ body {
   background: var(--bg-tertiary);
 }
 
+.notif-buttons {
+  display: flex;
+  gap: 0.5em;
+}
+
 .notification-item.unread {
   background: var(--gradient-glow);
 }
@@ -707,4 +712,17 @@ body {
   background-clip: text;
   text-shadow: 0 0 8px rgba(192, 132, 252, 0.7);
   filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.5));
+  position: relative;
+}
+
+.notification-alert::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -0.75em;
+  width: 0.6em;
+  height: 0.6em;
+  background: var(--color-warning);
+  border-radius: 50%;
+  box-shadow: 0 0 4px var(--color-warning);
 }
