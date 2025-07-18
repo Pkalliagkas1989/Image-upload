@@ -7,6 +7,31 @@ const markAllBtn = document.getElementById('mark-read-btn');
 const deleteAllBtn = document.getElementById('delete-all-btn');
 const notifLink = document.getElementById('notifications-link');
 
+// Endpoint used to verify the session and fetch the CSRF token
+const sessionVerifyURL = 'http://localhost:8080/forum/api/session/verify';
+// In-memory storage for the CSRF token
+let csrfTokenFromResponse = null;
+
+// Helper to load a CSRF token from the backend or cookie
+async function loadCSRFTokenFromSession() {
+  try {
+    const csrfCookie = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('csrf_token_frontend='));
+    if (csrfCookie) {
+      return csrfCookie.split('=')[1];
+    }
+
+    const resp = await fetch(sessionVerifyURL, { credentials: 'include' });
+    if (!resp.ok) throw new Error('Session not valid');
+    const data = await resp.json();
+    return data.csrf_token || data.CSRFToken;
+  } catch (err) {
+    console.warn('Failed to load CSRF token:', err);
+    return null;
+  }
+}
+
 // check for unread notifications and highlight button
 async function checkUnread() {
   try {
@@ -29,7 +54,9 @@ function toggleAlert(on) {
 
 async function fetchNotifications() {
   try {
-    const resp = await fetch('http://localhost:8080/forum/api/user/notifications', { credentials: 'include' });
+    const resp = await fetch('http://localhost:8080/forum/api/user/notifications', {
+      credentials: 'include'
+    });
     if (!resp.ok) throw new Error('failed');
     const data = await resp.json();
     renderList(data);
@@ -56,9 +83,13 @@ function renderList(notifs) {
 
     const delBtn = node.querySelector('.delete-btn');
     delBtn.addEventListener('click', async () => {
+      if (!csrfTokenFromResponse) {
+        csrfTokenFromResponse = await loadCSRFTokenFromSession();
+      }
       await fetch(`http://localhost:8080/forum/api/user/notifications/delete?id=${n.id}`, {
         method: 'DELETE',
-        credentials: 'include'
+        credentials: 'include',
+        headers: { 'X-CSRF-Token': csrfTokenFromResponse }
       });
       await fetchNotifications();
       checkUnread();
@@ -68,10 +99,16 @@ function renderList(notifs) {
     if (markBtn) {
       if (n.is_read) markBtn.classList.add('hidden');
       markBtn.addEventListener('click', async () => {
+        if (!csrfTokenFromResponse) {
+          csrfTokenFromResponse = await loadCSRFTokenFromSession();
+        }
         await fetch('http://localhost:8080/forum/api/user/notifications/read', {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfTokenFromResponse
+          },
           body: JSON.stringify({ id: n.id })
         });
         await fetchNotifications();
@@ -125,17 +162,34 @@ window.addEventListener('click', (e) => {
 
 if (markAllBtn) {
   markAllBtn.addEventListener('click', async () => {
-    await fetch('http://localhost:8080/forum/api/user/notifications/read', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    if (!csrfTokenFromResponse) {
+      csrfTokenFromResponse = await loadCSRFTokenFromSession();
+    }
+    await fetch('http://localhost:8080/forum/api/user/notifications/read', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfTokenFromResponse },
+      body: '{}'
+    });
     await fetchNotifications();
     checkUnread();
   });
 }
 if (deleteAllBtn) {
   deleteAllBtn.addEventListener('click', async () => {
-    await fetch('http://localhost:8080/forum/api/user/notifications/delete', { method: 'DELETE', credentials: 'include' });
+    if (!csrfTokenFromResponse) {
+      csrfTokenFromResponse = await loadCSRFTokenFromSession();
+    }
+    await fetch('http://localhost:8080/forum/api/user/notifications/delete', {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'X-CSRF-Token': csrfTokenFromResponse }
+    });
     await fetchNotifications();
     checkUnread();
   });
 }
-
-window.addEventListener('DOMContentLoaded', checkUnread);
+window.addEventListener('DOMContentLoaded', async () => {
+  csrfTokenFromResponse = await loadCSRFTokenFromSession();
+  checkUnread();
+});
