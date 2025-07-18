@@ -1,7 +1,28 @@
 const forumContainer = document.getElementById('forumContainer');
 const postTemplate = document.getElementById('post-template');
 
-window.addEventListener('DOMContentLoaded', () => {
+// Endpoint used to verify the session and fetch the CSRF token
+const sessionVerifyURL = 'http://localhost:8080/forum/api/session/verify';
+
+// In-memory storage for the CSRF token
+let csrfTokenFromResponse = null;
+
+// Helper to load a fresh CSRF token from the backend
+async function loadCSRFTokenFromSession() {
+  try {
+    const resp = await fetch(sessionVerifyURL, { credentials: 'include' });
+    if (!resp.ok) throw new Error('Session not valid');
+    const data = await resp.json();
+    return data.csrf_token || data.CSRFToken;
+  } catch (err) {
+    console.warn('Failed to load CSRF token:', err);
+    return null;
+  }
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+  // Load CSRF token when the page is loaded
+  csrfTokenFromResponse = await loadCSRFTokenFromSession();
   fetchCreatedPosts();
 });
 
@@ -70,8 +91,19 @@ function renderCreatedPosts(posts) {
 
     const editBtn = wrapper.querySelector('.edit-post');
     const deleteBtn = wrapper.querySelector('.delete-post');
+
     editBtn.addEventListener('click', async e => {
       e.preventDefault();
+
+      // Ensure we have a CSRF token before making the request
+      if (!csrfTokenFromResponse) {
+        csrfTokenFromResponse = await loadCSRFTokenFromSession();
+        if (!csrfTokenFromResponse) {
+          alert('Session expired. Please log in again.');
+          return;
+        }
+      }
+
       const title = prompt('Edit title', post.title);
       if (title === null) return;
       const content = prompt('Edit content', post.content);
@@ -86,7 +118,10 @@ function renderCreatedPosts(posts) {
         const resp = await fetch('http://localhost:8080/forum/api/posts/update', {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfTokenFromResponse,
+          },
           body: JSON.stringify(body),
         });
         if (!resp.ok) throw new Error('failed');
@@ -95,14 +130,28 @@ function renderCreatedPosts(posts) {
         alert('Failed to update post');
       }
     });
+
     deleteBtn.addEventListener('click', async e => {
       e.preventDefault();
       if (!confirm('Delete this post?')) return;
+
+      // Ensure CSRF token
+      if (!csrfTokenFromResponse) {
+        csrfTokenFromResponse = await loadCSRFTokenFromSession();
+        if (!csrfTokenFromResponse) {
+          alert('Session expired. Please log in again.');
+          return;
+        }
+      }
+
       try {
         const resp = await fetch('http://localhost:8080/forum/api/posts/delete', {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfTokenFromResponse,
+          },
           body: JSON.stringify({ post_id: post.id }),
         });
         if (!resp.ok) throw new Error('failed');
