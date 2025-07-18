@@ -14,7 +14,7 @@ import (
 
 // Database version constants
 const (
-	CURRENT_DB_VERSION = 4 // Updated to version 4 for image uploads
+	CURRENT_DB_VERSION = 5 // Updated to version 5 for notifications
 	INITIAL_VERSION    = 1
 )
 
@@ -58,6 +58,15 @@ func GetMigrations() []Migration {
 			SQL: []string{
 				config.CreateImagesTable,
 				config.IdxImagesPostID,
+			},
+		},
+		{
+			Version:     5,
+			Description: "Add notifications table",
+			SQL: []string{
+				config.CreateNotificationsTable,
+				config.IdxNotificationsUserID,
+				config.IdxNotificationsActorID,
 			},
 		},
 		// Add future migrations here
@@ -306,6 +315,7 @@ func createTables(db *sql.DB) error {
 		config.CreateCommentsTable,
 		config.CreateReactionsTable,
 		config.CreateImagesTable,
+		config.CreateNotificationsTable,
 		config.CreatePostCategoriesTable,
 		config.CreateOAuthTable,
 		// Add OAuth state table for new installations
@@ -344,6 +354,8 @@ func createIndexes(db *sql.DB) error {
 		config.IdxReactionsPostID,
 		config.IdxReactionsCommentID,
 		config.IdxImagesPostID,
+		config.IdxNotificationsUserID,
+		config.IdxNotificationsActorID,
 		// OAuth indexes
 		`CREATE INDEX IF NOT EXISTS idx_oauth_provider_user ON oauth_accounts(provider, provider_user_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_oauth_user_id ON oauth_accounts(user_id)`,

@@ -81,9 +81,25 @@ const CreateImagesTable = `CREATE TABLE IF NOT EXISTS images (
         file_path TEXT NOT NULL,
         thumbnail_path TEXT NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
-        FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
-    );`
+    FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
+);`
+
+// CreateNotificationsTable stores user notifications for reactions and comments
+const CreateNotificationsTable = `CREATE TABLE IF NOT EXISTS notifications (
+    notification_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    actor_id TEXT NOT NULL,
+    post_id TEXT,
+    comment_id TEXT,
+    action TEXT NOT NULL,
+    is_read INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (actor_id) REFERENCES user(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+    FOREIGN KEY (comment_id) REFERENCES comments(comment_id) ON DELETE CASCADE
+);`
 
 // -- OAuth providers table to store OAuth account information
 const CreateOAuthTable = `CREATE TABLE IF NOT EXISTS oauth_accounts (

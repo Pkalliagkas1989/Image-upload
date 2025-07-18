@@ -68,6 +68,50 @@ function renderCreatedPosts(posts) {
     wrapper.className = 'post-link';
     wrapper.appendChild(node);
 
+    const editBtn = wrapper.querySelector('.edit-post');
+    const deleteBtn = wrapper.querySelector('.delete-post');
+    editBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      const title = prompt('Edit title', post.title);
+      if (title === null) return;
+      const content = prompt('Edit content', post.content);
+      if (content === null) return;
+      const body = {
+        post_id: post.id,
+        title,
+        content,
+        category_ids: post.categories ? post.categories.map(c => c.id) : [],
+      };
+      try {
+        const resp = await fetch('http://localhost:8080/forum/api/posts/update', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        if (!resp.ok) throw new Error('failed');
+        fetchCreatedPosts();
+      } catch (err) {
+        alert('Failed to update post');
+      }
+    });
+    deleteBtn.addEventListener('click', async e => {
+      e.preventDefault();
+      if (!confirm('Delete this post?')) return;
+      try {
+        const resp = await fetch('http://localhost:8080/forum/api/posts/delete', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ post_id: post.id }),
+        });
+        if (!resp.ok) throw new Error('failed');
+        fetchCreatedPosts();
+      } catch (err) {
+        alert('Failed to delete post');
+      }
+    });
+
     forumContainer.appendChild(wrapper);
   });
 }

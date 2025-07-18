@@ -39,42 +39,42 @@ func (r *ReactionRepository) GetAllReactions() ([]models.Reaction, error) {
 
 // ToggleReaction adds or updates a reaction. If the same reaction already
 // exists for the user and target, it is removed.
-func (r *ReactionRepository) ToggleReaction(userID, targetType, targetID string, reactionType int) error {
+func (r *ReactionRepository) ToggleReaction(userID, targetType, targetID string, reactionType int) (int, int, error) {
 	switch targetType {
 	case "post":
 		var existing int
 		err := r.db.QueryRow(`SELECT reaction_type FROM reactions WHERE user_id = ? AND post_id = ?`, userID, targetID).Scan(&existing)
 		if err != nil && err != sql.ErrNoRows {
-			return err
+			return 0, 0, err
 		}
 		if err == sql.ErrNoRows {
 			_, err = r.db.Exec(`INSERT INTO reactions (user_id, post_id, reaction_type, created_at) VALUES (?, ?, ?, ?)`, userID, targetID, reactionType, time.Now())
-			return err
+			return existing, reactionType, err
 		}
 		if existing == reactionType {
 			_, err = r.db.Exec(`DELETE FROM reactions WHERE user_id = ? AND post_id = ?`, userID, targetID)
-			return err
+			return existing, 0, err
 		}
 		_, err = r.db.Exec(`UPDATE reactions SET reaction_type = ?, created_at = ? WHERE user_id = ? AND post_id = ?`, reactionType, time.Now(), userID, targetID)
-		return err
+		return existing, reactionType, err
 	case "comment":
 		var existing int
 		err := r.db.QueryRow(`SELECT reaction_type FROM reactions WHERE user_id = ? AND comment_id = ?`, userID, targetID).Scan(&existing)
 		if err != nil && err != sql.ErrNoRows {
-			return err
+			return 0, 0, err
 		}
 		if err == sql.ErrNoRows {
 			_, err = r.db.Exec(`INSERT INTO reactions (user_id, comment_id, reaction_type, created_at) VALUES (?, ?, ?, ?)`, userID, targetID, reactionType, time.Now())
-			return err
+			return existing, reactionType, err
 		}
 		if existing == reactionType {
 			_, err = r.db.Exec(`DELETE FROM reactions WHERE user_id = ? AND comment_id = ?`, userID, targetID)
-			return err
+			return existing, 0, err
 		}
 		_, err = r.db.Exec(`UPDATE reactions SET reaction_type = ?, created_at = ? WHERE user_id = ? AND comment_id = ?`, reactionType, time.Now(), userID, targetID)
-		return err
+		return existing, reactionType, err
 	}
-	return errors.New("invalid target type")
+	return 0, 0, errors.New("invalid target type")
 }
 
 // GetReactionsByPostWithUser returns reactions for a post with usernames
