@@ -189,3 +189,37 @@ body, html {
   display: block;
   margin-bottom: 0.5em;
 }
+
+/* Action buttons inside each post */
+.post-actions {
+  margin-top: 0.5em;
+  display: flex;
+  gap: 0.8em;
+}
+
+.post-actions button {
+  padding: 0.6em 1.2em;
+  background: var(--gradient-main);
+  color: var(--color-primary);
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(139, 92, 246, 0.4);
+  transition: all 0.3s ease-in-out;
+}
+
+.post-actions button:hover {
+  background: var(--gradient-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+}
+
+.post-actions .delete-post {
+  background: linear-gradient(135deg, var(--color-warning), #42065e55);
+}
+
+.post-actions .delete-post:hover {
+  background: linear-gradient(135deg, #28033955, var(--color-warning));
+  box-shadow: 0 6px 20px rgba(60, 2, 118, 0.4);
+}
