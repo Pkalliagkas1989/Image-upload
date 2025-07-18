@@ -51,3 +51,23 @@ func (r *NotificationRepository) GetByUser(userID string) ([]models.Notification
 	}
 	return notifs, nil
 }
+
+func (r *NotificationRepository) MarkAllRead(userID string) error {
+	_, err := r.db.Exec(`UPDATE notifications SET is_read = 1 WHERE user_id = ?`, userID)
+	return err
+}
+
+func (r *NotificationRepository) MarkRead(userID, id string) error {
+	_, err := r.db.Exec(`UPDATE notifications SET is_read = 1 WHERE notification_id = ? AND user_id = ?`, id, userID)
+	return err
+}
+
+func (r *NotificationRepository) Delete(userID, id string) error {
+	_, err := r.db.Exec(`DELETE FROM notifications WHERE notification_id = ? AND user_id = ?`, id, userID)
+	return err
+}
+
+func (r *NotificationRepository) DeleteAll(userID string) error {
+	_, err := r.db.Exec(`DELETE FROM notifications WHERE user_id = ?`, userID)
+	return err
+}

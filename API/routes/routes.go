@@ -92,6 +92,8 @@ func SetupRoutes(db *sql.DB) http.Handler {
 	mux.Handle("/forum/api/react", protected(http.HandlerFunc(reactionHandler.CreateReact)))
 	mux.Handle("/forum/api/images/upload", protected(http.HandlerFunc(imageHandler.Upload)))
 	mux.Handle("/forum/api/user/notifications", protected(http.HandlerFunc(notificationHandler.GetNotifications)))
+	mux.Handle("/forum/api/user/notifications/read", protected(http.HandlerFunc(notificationHandler.MarkRead)))
+	mux.Handle("/forum/api/user/notifications/delete", protected(http.HandlerFunc(notificationHandler.Delete)))
 
 	// Additional protected routes for user management
 	mux.Handle("/forum/api/user/profile", protected(http.HandlerFunc(authHandler.GetProfile)))

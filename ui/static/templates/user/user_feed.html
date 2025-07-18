@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/css/user.css" />
     <link rel="stylesheet" href="/static/css/modal.css" />
     <link rel="stylesheet" href="/static/css/user_feed.css" />
+    <script src="/static/js/user/notification_popup.js" type="module"></script>
     <script src="/static/js/user/user_mainpage.js" type="module"></script>
     <script src="/static/js/user/user_feed.js" type="module"></script>
     <script src="/static/js/user/create_post.js" defer></script>
@@ -36,6 +37,9 @@
         </li>
         <li>
           <a href="/user/liked-posts" id="liked-posts-link">Liked Posts</a>
+        </li>
+        <li>
+          <a href="#" id="open-notifs">Notifications</a>
         </li>
       </ul>
       <div class="side-glow"></div>
@@ -116,5 +120,30 @@
         </div>
       </div>
     </div>
+
+    <!-- Notifications Modal -->
+    <div id="notif-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="body-container">
+          <button class="close-btn">&times;</button>
+          <h2>Notifications</h2>
+          <div id="notif-list"></div>
+          <div class="notif-actions">
+            <button id="mark-read-btn">Read All</button>
+            <button id="delete-all-btn">Delete All</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <template id="notif-item-template">
+      <div class="notification-item">
+        <div>
+          <span class="notif-text"></span>
+          <time class="notif-time"></time>
+        </div>
+        <button class="delete-btn">Delete</button>
+      </div>
+    </template>
   </body>
 </html>
