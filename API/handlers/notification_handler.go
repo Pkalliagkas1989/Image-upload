@@ -75,9 +75,23 @@ func (h *NotificationHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	// ID can be provided either as a query param or in the JSON body.
 	id := r.URL.Query().Get("id")
 	var err error
-	if id == "" {
+
+	if id == "" && r.Body != nil {
+		var req struct {
+			ID *string `json:"id"`
+		}
+		// Ignore decode errors as body may be empty
+		json.NewDecoder(r.Body).Decode(&req)
+		if req.ID != nil {
+			id = *req.ID
+		}
+	}
+
+	// Some clients may send the string "null" when no ID is supplied
+	if id == "" || id == "null" {
 		err = h.Repo.DeleteAll(user.ID)
 	} else {
 		err = h.Repo.Delete(user.ID, id)

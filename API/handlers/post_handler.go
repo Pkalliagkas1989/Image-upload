@@ -69,17 +69,17 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		PostID string `json:"post_id"`
+		PostID *string `json:"post_id"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.ErrorResponse(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	if req.PostID == "" {
+	if req.PostID == nil || *req.PostID == "" || *req.PostID == "null" {
 		utils.ErrorResponse(w, "Post ID required", http.StatusBadRequest)
 		return
 	}
-	if err := h.PostRepo.Delete(req.PostID, user.ID); err != nil {
+	if err := h.PostRepo.Delete(*req.PostID, user.ID); err != nil {
 		if err == sql.ErrNoRows {
 			utils.ErrorResponse(w, "Post not found", http.StatusNotFound)
 			return
